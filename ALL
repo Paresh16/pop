@@ -1,0 +1,720 @@
+# RPC 
+
+server 
+import xmlrpc.server
+
+def factorial(n):
+    if n == 0:
+        return 1
+    else:
+        return n * factorial(n-1)
+
+server = xmlrpc.server.SimpleXMLRPCServer(('localhost', 8000))
+server.register_function(factorial)
+print("Server started on http://localhost:8000")
+server.serve_forever() 
+
+Client 
+import xmlrpc.client
+
+n = int(input("Enter an integer value: "))
+proxy = xmlrpc.client.ServerProxy('http://localhost:8000/')
+result = proxy.factorial(n)
+print(f"The factorial of {n} is {result}") 
+
+3 fuzzy 
+
+import numpy as np
+
+# Union of fuzzy sets
+def fuzzy_union(A, B):
+    return np.maximum(A, B)
+
+# Intersection of fuzzy sets
+def fuzzy_intersection(A, B):
+    return np.minimum(A, B)
+
+# Complement of a fuzzy set
+def fuzzy_complement(A):
+    return 1 - A
+
+# Difference of fuzzy sets
+def fuzzy_difference(A, B):
+    return np.maximum(A - B, 0)
+
+# Fuzzy relation by Cartesian product
+def fuzzy_cartesian_product(A, B):
+    R1 = []
+    for i in range(len(A)):
+        for j in range(len(B)):
+            R1.append([A[i], B[j]])
+    return np.array(R1)
+
+# Max-Min Composition of fuzzy relations
+def max_min_composition(R1, R2):
+    R3 = np.zeros((len(R1), len(R2)))
+    for i in range(len(R1)):
+        for j in range(len(R2)):
+            R3[i][j] = np.max(np.minimum(R1[i], R2[j]))
+    return R3
+
+
+# User input for fuzzy sets A and B
+A, B = [], []
+n = int(input('Enter the number of values in the fuzzy set:'))
+for i in range(n):
+    A.append(float(input(f'Enter value {i+1} for fuzzy set A:')))
+    B.append(float(input(f'Enter value {i+1} for fuzzy set B:')))
+
+A = np.array(A)
+B = np.array(B)
+
+# Test the operations
+print("Union:", fuzzy_union(A, B))
+print("Intersection:", fuzzy_intersection(A, B))
+print("Complement of A:", fuzzy_complement(A))
+print("Difference of A and B:", fuzzy_difference(A, B))
+
+# Fuzzy relations by Cartesian product
+R1 = fuzzy_cartesian_product(A, B)
+R2 = fuzzy_cartesian_product(B, A)
+print("Fuzzy relation R1:", R1)
+print("Fuzzy relation R2:", R2)
+
+print(np.max(np.minimum(R1[0], R2[0])))
+
+# Max-Min Composition of fuzzy relations
+R3 = max_min_composition(R1, R2)
+print("Max-Min Composition R3:", R3)
+
+4 Load 
+
+num_servers = int(input('Enter number of servers: '))
+num_loads = int(input('Enter number of loads: '))
+
+servers = []
+for i in range(num_servers):
+    name = input(f'Enter the name for server {i+1}: ')
+    weight = int(input(f'Enter the weight for server {i+1}: '))
+    servers.append([name, weight, 0])
+
+i=0
+index = i % num_servers
+while i<num_loads:
+    if servers[index][2] < servers[index][1]:
+        print(f'Load {i+1} is assigned to server {servers[index][0]}')
+        servers[index][2] += 1
+        i+=1
+        index = i % num_servers
+    else: 
+        index += 1
+
+5 coconut 
+
+# Import necessary libraries
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPRegressor
+from geneticalgorithm import geneticalgorithm as ga
+import warnings
+
+# Define functions for genetic algorithm fitness evaluation and neural network training
+def fitness_function(params):
+    # Decode parameters
+    hidden_layer_sizes = (int(params[0]),) * int(params[1])
+    activation = ['identity', 'logistic', 'tanh', 'relu'][int(params[2])]
+    solver = ['lbfgs', 'sgd', 'adam'][int(params[3])]
+    
+    # Create and train neural network
+    model = MLPRegressor(hidden_layer_sizes=hidden_layer_sizes, activation=activation, solver=solver)
+    model.fit(X_train, y_train)
+    
+    # Evaluate fitness (example: mean squared error)
+    fitness = -model.score(X_val, y_val)
+    
+    return fitness
+
+def train_neural_network(params):
+    # Decode parameters
+    hidden_layer_sizes = (int(params[0]),) * int(params[1])
+    activation = ['identity', 'logistic', 'tanh', 'relu'][int(params[2])]
+    solver = ['lbfgs', 'sgd', 'adam'][int(params[3])]
+    
+    # Create and train neural network
+    model = MLPRegressor(hidden_layer_sizes=hidden_layer_sizes, activation=activation, solver=solver)
+    model.fit(X_train, y_train)
+    
+    # Evaluate neural network performance on validation data
+    validation_error = -model.score(X_val, y_val)
+    
+    return validation_error
+
+# Load your dataset
+np.random.seed(42)
+
+# Assuming you have features like temperature, humidity, etc., and you want to predict drying time
+num_samples = 1000
+num_features = 5  # Adjust based on your actual features
+
+# Generate synthetic features
+X = np.random.rand(num_samples, num_features)
+
+# Generate synthetic target variable (drying time)
+# Here, we'll assume a linear relationship with some noise
+true_coefficients = np.random.rand(num_features) * 10  # Random coefficients for features
+noise = np.random.normal(loc=0, scale=1, size=num_samples)  # Gaussian noise
+y = np.dot(X, true_coefficients) + noise
+
+
+# Example: Replace X_train, X_val, y_train, y_val with your dataset
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+warnings.filterwarnings("ignore")
+
+# Define genetic algorithm parameters
+number_of_parameters = 4  # Adjust based on the number of parameters you want to optimize
+varbound = np.array([[5, 50],  # Range for number of neurons in each hidden layer
+                     [1, 5],    # Range for number of hidden layers
+                     [0, 3],    # Activation function: 0 for identity, 1 for logistic, 2 for tanh, 3 for relu
+                     [0, 2]])   # Solver: 0 for lbfgs, 1 for sgd, 2 for adam
+algorithm_param = {'max_num_iteration': 1, 'population_size': 100, 'mutation_probability': 0.1,
+                   'elit_ratio': 0.01, 'crossover_probability': 0.5, 'parents_portion': 0.3,
+                   'crossover_type': 'uniform', 'max_iteration_without_improv': None}
+model = ga(function=fitness_function, dimension=number_of_parameters, variable_type='int', variable_boundaries=varbound,
+           algorithm_parameters=algorithm_param)
+
+# Run the genetic algorithm
+model.run()
+
+# Get the best parameters found by the genetic algorithm
+best_params = model.output_dict['variable']
+
+# Train neural network with the best parameters
+validation_error = train_neural_network(best_params)
+
+print("Best parameters found by genetic algorithm:", best_params)
+print("Validation error of neural network:", validation_error)
+
+# Optionally, you can further evaluate the neural network on a test set
+# and perform any additional analysis or visualization
+
+6 clonal 
+
+import numpy as np
+
+# Define the Sphere function to be optimized
+def sphere_function(x):
+    return np.sum(x**3)
+
+# Define the Clonal Selection Algorithm
+def clonal_selection_algorithm(objective_function, dim, pop_size, max_iter, mutation_rate):
+    # Initialize population randomly
+    population = np.random.uniform(-5, 5, size=(pop_size, dim))
+    
+    for iter in range(max_iter):
+        # Evaluate fitness for each individual
+        fitness = np.array([objective_function(ind) for ind in population])
+        
+        # Sort population based on fitness
+        sorted_indices = np.argsort(fitness)
+        population = population[sorted_indices]
+        fitness = fitness[sorted_indices]
+        
+        # Clone individuals based on their fitness
+        num_clones = int(pop_size * 0.5)
+        clones = population[:num_clones]
+        
+        # Mutate clones
+        mutated_clones = clones + np.random.normal(scale=mutation_rate, size=clones.shape)
+        
+        # Select the best individuals from the original population and mutated clones
+        new_population = np.vstack((population[-num_clones:], mutated_clones))
+        
+        population = new_population
+    
+    # Return the best solution found
+    best_solution = population[np.argmin(fitness)]
+    best_fitness = fitness.min()
+    
+    return best_solution, best_fitness
+
+# Define parameters
+dim = 10           # Dimensionality of the problem
+pop_size = 100     # Population size
+max_iter = 100     # Maximum number of iterations
+mutation_rate = 0.1  # Mutation rate
+
+# Run Clonal Selection Algorithm
+best_solution, best_fitness = clonal_selection_algorithm(sphere_function, dim, pop_size, max_iter, mutation_rate)
+
+print("Best solution:", best_solution)
+print("Best fitness:", best_fitness)
+
+7 immune 
+
+import numpy as np
+
+def create_antibody(size):
+  return np.random.rand(size) 
+
+# Affinity (closeness)
+def affinity(antibody, datapoint):
+  distance = np.linalg.norm(antibody - datapoint)     #calculating euclidean distance
+  return 1 / (1 + distance)
+
+def get_key(pair):
+   return pair[1]
+
+size = 3
+healthy_data = np.array([[1.0, 2.0, 3.0], [1.1, 1.9, 3.2]])     # 2 x 3
+num_antibodies = 10
+antibody_population = []
+for i in range(num_antibodies):
+    antibody_population.append(create_antibody(size))
+
+# Simulate sensor data with potential damage (replace with actual data)
+damaged_data = np.array([[1.2, 1.7, 2.8], [1.4, 1.5, 3.5]])
+
+for i in range(2):
+    healthy_affinities = []
+    for ab in antibody_population:
+       for datapoint in healthy_data:
+          healthy_affinities.append(affinity(ab, datapoint))
+
+    # Select top 'n' antibodies based on affinity (healthy data)
+    top_antibodies = []
+    for i in range(len(antibody_population)):
+        pair = [antibody_population[i], healthy_affinities[i]]
+        top_antibodies.append(pair)
+    top_antibodies.sort(key = get_key, reverse=True)
+    top_antibodies = top_antibodies[0:5]
+
+    # Clone and introduce random mutations (simplified)
+    new_population = []
+    for ab, i in top_antibodies:
+        new_population.append(ab + create_antibody(size) * 0.1)  # Introduce small mutation
+        antibody_population = new_population 
+
+# Update antibody population
+antibody_population.extend(new_population)
+
+# Check affinity for damaged data
+damaged_affinities = []
+for datapoint in damaged_data:
+  for ab in antibody_population:
+      damaged_affinities.append(affinity(ab, datapoint))
+
+# Identify potential damage based on high affinity for damaged data
+potential_damage_index = damaged_affinities.index(max(damaged_affinities))
+
+print(len(antibody_population))
+print("Antibody that can heal damaged data: ", antibody_population[potential_damage_index])
+
+8 deap
+
+import random
+from deap import creator, base, tools, algorithms
+
+creator.create("FitnessMax", base.Fitness, weights=(1.0,))
+creator.create("Individual", list, fitness=creator.FitnessMax)
+
+toolbox = base.Toolbox()
+
+toolbox.register("attr_bool", random.randint, 0, 1)
+toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_bool, n=100)
+toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+
+def evalOneMax(individual):
+    return sum(individual),
+
+toolbox.register("evaluate", evalOneMax)
+toolbox.register("mate", tools.cxTwoPoint)
+toolbox.register("mutate", tools.mutFlipBit, indpb=0.05)
+toolbox.register("select", tools.selTournament, tournsize=3)
+
+population = toolbox.population(n=300)
+
+NGEN=40
+for gen in range(NGEN):
+    offspring = algorithms.varAnd(population, toolbox, cxpb=0.5, mutpb=0.1)
+    fits = toolbox.map(toolbox.evaluate, offspring)
+    for fit, ind in zip(fits, offspring):
+        ind.fitness.values = fit
+    population = toolbox.select(offspring, k=len(population))
+top10 = tools.selBest(population, k=10)
+print(len(top10[0]))
+
+10 ant colony
+
+import numpy as np
+import random
+
+def distance(city1, city2):
+    return np.linalg.norm(city1 - city2) 
+
+num_cities = 4
+num_ants = 4
+evaporation_rate = 0.05
+alpha = 1
+beta = 1
+
+cities = np.random.rand(num_cities, 2)
+# cities = [[1,2], [3,4], [5,6], [7,8]]
+
+distances = []
+# distances = [[0, 2, 3, 4],      #0
+#              [2, 0, 3, 4],      #1
+#              [3, 1, 0, 4],      #2
+#              [1, 2, 3, 0]]      #3
+for city1 in cities:
+    temp = []
+    for city2 in cities: 
+        temp.append(distance(city1, city2))
+    distances.append(temp)
+
+phermones = np.random.rand(num_cities, num_cities)
+# phermones = [[0, 2, 3, 4],
+#              [2, 0, 3, 4],
+#              [3, 1, 0, 4],
+#              [1, 2, 3, 0]]
+
+tour_lengths = []
+tour_paths = []
+
+for _ in range(num_ants):
+    randomly_selected_city = random.randint(0, num_cities-1)
+    selected_city = randomly_selected_city
+    tour_length = 0
+    tour_path = []
+    for j in range(num_cities): 
+        tour_path.append(selected_city)
+        dist = distances[selected_city]
+        phero = phermones[selected_city]
+        stochastic_gradient_descent = []
+        for i in range(len(dist)):
+            if dist[i] != 0: stochastic_gradient_descent.append(((phero[i])**alpha)*((1/dist[i])**beta))
+            else: stochastic_gradient_descent.append(0)
+        
+        total_eta = sum(stochastic_gradient_descent)
+        for i in range(len(stochastic_gradient_descent)):
+            stochastic_gradient_descent[i]= stochastic_gradient_descent[i] / total_eta
+        
+        # eta = [1, 2, 3, 4] solution_set = [1, 3, 6, 10]
+        solution_set, temp = [], 0
+        for i in range(len(stochastic_gradient_descent)):
+            temp += stochastic_gradient_descent[i]
+            solution_set.append(temp)
+
+        random_value = random.random()    # 0 to 1
+        for i in range(len(solution_set)): 
+            if random_value <= solution_set[i]:
+                if i not in tour_path:
+                    selected_city = i
+                    break
+        tour_length += dist[selected_city]
+
+        for i in range(len(phero)): 
+            phero[i] = (1 - evaporation_rate)*phero[i]
+        phermones[selected_city] = phero
+        
+    tour_length += distances[randomly_selected_city][selected_city]
+    tour_path.append(randomly_selected_city)   
+
+    tour_lengths.append(tour_length)
+    tour_paths.append(tour_path)
+
+minimum_index = tour_lengths.index(min(tour_lengths))
+print("Shortest Distance: ", tour_lengths[minimum_index])
+print("Shortest Path: ",  tour_paths[minimum_index])
+
+java 
+
+2 RMI 
+
+Client
+
+//RMIClient//
+import java.sql.*;
+import java.rmi.*;
+import java.io.*;
+import java.util.*;
+import java.util.Vector.*;
+import java.lang.*;
+import java.rmi.registry.*;
+
+public class Client
+{
+	static String name1,name2,name3;
+	public static void main(String args[])
+	{
+		Client c=new Client();
+		BufferedReader b = new BufferedReader(new InputStreamReader(System.in));
+		 int ch;
+
+		 try {
+			 Registry r1 = LocateRegistry.getRegistry ( "localhost", 1030);
+			 DBInterface DI=(DBInterface)r1.lookup("DBServ");
+			 do{
+				System.out.println("1.Send input strings\n2.Display concatenated string \nEnter your choice");
+		 		ch= Integer.parseInt(b.readLine());
+
+		 		switch(ch){
+		 		case 1:
+		 			System.out.println(" \n Enter first string:");
+		 			name1=b.readLine();
+		 			System.out.println(" \n Enter second string:");
+		 			name2=b.readLine();
+		 			name3=DI.input(name1,name2);
+		 			break;
+		 		case 2:
+		 			System.out.println("\n Concatenated String is : ");
+		 			System.out.println(" " +name3+"");
+	 	 			break;
+				}
+ 			}while(ch>0);
+
+ 		}
+ 		catch (Exception e)
+ 		{
+ 			System.out.println("ERROR: " +e.getMessage());
+ 		}
+	}
+}
+
+SERVER 
+
+import java.sql.*;
+import java.rmi.*;
+import java.rmi.server.*;
+import java.util.Vector;
+
+interface DBInterface extends Remote
+{
+    public String input(String name1,String name2) throws RemoteException;
+}
+
+public class Server extends UnicastRemoteObject implements DBInterface
+{
+    String name3;
+    public Server() throws RemoteException
+    { 
+        try
+        {
+            System.out.println("Initializing Server\nServer Ready");
+        }
+        catch (Exception e)
+        {
+            System.out.println("ERROR: " +e.getMessage());
+        }
+    }
+
+    public static void main(String[] args)
+    { 
+        try
+        { 
+            Server rs=new Server();
+            java.rmi.registry.LocateRegistry.createRegistry(1030).rebind("DBServ", rs);
+        }
+        catch (Exception e)
+        {
+            System.out.println("ERROR: " +e.getMessage());
+        }
+    }
+
+    public String input(String name1,String name2)
+    {
+        try
+        {
+            name3=name1.concat(name2);
+        }
+        catch (Exception e)
+        {
+            System.out.println("ERROR: " +e.getMessage());  
+        }
+        return name3;
+    }
+}
+
+9 hotel booking 
+
+Client 
+
+import java.sql.*;
+import java.rmi.*;
+import java.io.*;
+import java.util.*;
+import java.util.Vector.*;
+import java.lang.*;
+import java.rmi.registry.*;
+
+public class Client
+{ 
+    static String send_details;
+    public static void main(String args[])
+    {
+        Client c = new Client();
+        BufferedReader b = new BufferedReader(new InputStreamReader(System.in));
+        int ch;
+        String name, date, type_of_room, breakfast;
+        try 
+        { 
+            Registry r1 = LocateRegistry.getRegistry ( "localhost", 1030);
+            DBInterface DI=(DBInterface)r1.lookup("DBServ");
+            do
+            {
+                System.out.println("1. Book Room for Specific Guest\n2. Cancel the Booking for the Guest \nEnter ur choice");
+                ch = Integer.parseInt(b.readLine());
+                switch(ch)
+                {
+                    case 1:
+                    {
+                        System.out.println(" \nEnter the name of the guest:");
+                        name = b.readLine();
+                        System.out.println(" \nEnter Check-In Date(YYYY-MM-DD):");
+                        date = b.readLine();
+                        System.out.println(" \nEnter which type of room you prefer(Standard / Deluxe):");
+                        type_of_room = b.readLine();
+                        System.out.println(" \nDo you want to include Breakfast(Yes / No):");
+                        breakfast = b.readLine();
+                        send_details = DI.input(name, date, "Book");
+                        System.out.println(" \n"+send_details+"\n");
+                        break;
+                    }
+                    case 2:
+                    {
+                        System.out.println(" \nEnter the name of the guest:");
+                        name = b.readLine();
+                        System.out.println(" \nEnter Check-In Date(YYYY-MM-DD):");
+                        date = b.readLine();
+                        send_details = DI.input(name, date, "Cancel");
+                        System.out.println(" \n"+send_details+"\n");
+                        break;
+                    }
+                }
+            }while(ch>0);
+        }       
+        catch (Exception e)
+        {
+            System.out.println("ERROR: " +e.getMessage());
+        }
+    }
+}
+
+Server 
+
+import java.util.*;
+import java.sql.*;
+import java.rmi.*;
+import java.rmi.server.*;
+import java.util.Vector;
+interface DBInterface extends Remote
+{
+    public String input(String name, String date, String operation) throws RemoteException;
+}
+
+public class Server extends UnicastRemoteObject implements DBInterface
+{
+    Map<String, String[]> dateMap = new HashMap<>();
+    public Server() throws RemoteException
+    { 
+        try
+        {
+            System.out.println("Initializing Server\nServer Ready");
+        }
+        catch (Exception e)
+        {
+            System.out.println("ERROR: " +e.getMessage());
+        }
+    }
+
+    public static void main(String[] args)
+    { 
+        try
+        { 
+            Server rs=new Server();
+            java.rmi.registry.LocateRegistry.createRegistry(1030).rebind("DBServ", rs);
+        }
+        catch (Exception e)
+        {
+            System.out.println("ERROR: " +e.getMessage());
+        }
+    }
+
+    public String input(String name, String date, String operation)
+    {
+        try
+        {
+            if(operation.equals("Book"))
+            {
+                if(dateMap.containsKey(date))
+                {
+                    String[] str = dateMap.get(date);
+                    int nextEmptyIndex = -1;
+                    for (int i = 0; i < str.length; i++) 
+                    {
+                        if (str[i].equals(null)) 
+                        {
+                            nextEmptyIndex = i;
+                            break;
+                        }
+                    }
+                    if(nextEmptyIndex == -1) 
+                    {
+                        return "Hotel is full for Date "+date;
+                    }
+                    else
+                    {
+                        str[nextEmptyIndex] = name;
+                        // dateMap.get(date) = str;
+                        return "\nBooking for "+name+" for Date "+date+" has been confirmed.";
+                    }
+                }
+                else
+                {
+                    System.out.println("In book section else");
+                    String[] strings = {name, "", "", "", "", "", "", "", "", ""};
+                    dateMap.put(date, strings);
+                    return "\nBooking for "+name+" for Date "+date+" has been confirmed.";
+                }
+            }
+            else if(operation.equals("Cancel"))
+            {
+                if (dateMap.containsKey(date)) 
+                {
+                    String[] str = dateMap.get(date);
+        
+                    int index = -1;
+                    for (int i = 0; i < str.length; i++) 
+                    {
+                        if (str[i].equals(name)) 
+                        {
+                            index = i;
+                            break;
+                        }
+                    }
+        
+                    if (index == -1) 
+                    {
+                        return "No bookings available with this name.";
+                        
+                    } else 
+                    {
+                        str[index] = "";
+                        // dateMap.get(date) = str;
+                        return "\nCancellation for "+name+" for Date "+date+" on "+date+" is successful.";
+                    }
+                } 
+                else 
+                {
+                    return "No bookings available on this date.";
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            return "ERROR: " +e.getMessage(); 
+        }
+        return "";
+    }
+}  
